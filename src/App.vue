@@ -33,8 +33,7 @@ const menuOpen = ref(false);
         <!-- 브랜드 -->
         <RouterLink to="/" class="app-brand" @click="menuOpen = false">
           <span class="brand-icon"><i class="fa-solid fa-dumbbell"></i></span>
-          <span class="brand-text">FitTrack</span>
-          <span class="brand-badge">AI</span>
+          <span class="brand-text">FitTracker</span>
         </RouterLink>
 
         <!-- 데스크탑 링크 -->
@@ -87,7 +86,7 @@ const menuOpen = ref(false);
 
     <!-- ── Footer ── -->
     <footer class="app-footer">
-      <span><i class="fa-solid fa-dumbbell me-1"></i>FitTrack</span>
+      <span><i class="fa-solid fa-dumbbell me-1"></i>FitTracker</span>
       <span class="footer-sep">·</span>
       <span>Vue 3 + Pinia + JSON Server</span>
       <span class="footer-sep">·</span>
@@ -198,16 +197,21 @@ body {
 
 /* 데스크탑 링크 */
 .nav-links {
-  display: flex; align-items: center; gap: 0.25rem; flex: 1;
+  display: flex; align-items: center; gap: 0.9rem; flex: 1;
 }
 .nav-link {
   display: flex; align-items: center; gap: 0.4rem;
-  padding: 0.42rem 0.85rem; border-radius: 10px;
+  padding: 0.46rem 1.05rem; border-radius: 12px;
   text-decoration: none; font-size: 0.87rem; font-weight: 600;
-  color: rgba(248,251,255,0.72);
+  color: rgba(248,251,255,0.88);
+  border: 1px solid transparent;
   transition: all 0.18s ease;
 }
-.nav-link:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.nav-link:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border-color: rgba(255,255,255,0.18);
+}
 .nav-link.active {
   background: linear-gradient(135deg, rgba(59,130,246,0.35), rgba(6,182,212,0.3));
   color: #fff;
@@ -216,7 +220,7 @@ body {
 .nav-link i { font-size: 0.82rem; }
 
 /* 우측 */
-.nav-right { margin-left: auto; display: flex; align-items: center; gap: 0.4rem; }
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 0.6rem; }
 
 .icon-btn {
   width: 36px; height: 36px; border-radius: 10px;
