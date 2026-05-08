@@ -1,14 +1,42 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import axios from 'axios';
+import seedData from '../../db.json';
 
-const API_BASE = '/api';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
+const LOCAL_WORKOUTS_KEY = 'workouts';
 
 const api = axios.create({
   baseURL: API_BASE,
   timeout: 8000,
   headers: { 'Content-Type': 'application/json' }
 });
+
+function cloneWorkouts(list = seedData.workouts) {
+  return JSON.parse(JSON.stringify(list || []));
+}
+
+function loadLocalWorkouts() {
+  try {
+    const saved = localStorage.getItem(LOCAL_WORKOUTS_KEY);
+    if (saved) return JSON.parse(saved);
+
+    const seeded = cloneWorkouts();
+    localStorage.setItem(LOCAL_WORKOUTS_KEY, JSON.stringify(seeded));
+    return seeded;
+  } catch (e) {
+    console.warn('loadLocalWorkouts fallback:', e);
+    return cloneWorkouts();
+  }
+}
+
+function saveLocalWorkouts(list) {
+  localStorage.setItem(LOCAL_WORKOUTS_KEY, JSON.stringify(list));
+}
+
+function nextLocalId(list) {
+  return list.reduce((max, item) => Math.max(max, Number(item.id) || 0), 0) + 1;
+}
 
 export const useWorkoutStore = defineStore('workout', () => {
   // ─── state ────────────────────────────────────────────────
@@ -173,8 +201,9 @@ export const useWorkoutStore = defineStore('workout', () => {
       const { data } = await api.get('/workouts');
       workouts.value = data;
     } catch (e) {
-      error.value = e.message;
-      console.error('fetchWorkouts error:', e);
+      workouts.value = loadLocalWorkouts();
+      error.value = null;
+      console.warn('fetchWorkouts API fallback:', e);
     } finally {
       loading.value = false;
     }
@@ -186,8 +215,12 @@ export const useWorkoutStore = defineStore('workout', () => {
       workouts.value.push(data);
       return data;
     } catch (e) {
-      error.value = e.message;
-      throw e;
+      const data = { ...payload, id: nextLocalId(workouts.value) };
+      workouts.value.push(data);
+      saveLocalWorkouts(workouts.value);
+      error.value = null;
+      console.warn('addWorkout API fallback:', e);
+      return data;
     }
   }
 
@@ -196,8 +229,10 @@ export const useWorkoutStore = defineStore('workout', () => {
       await api.delete(`/workouts/${id}`);
       workouts.value = workouts.value.filter((w) => w.id !== id);
     } catch (e) {
-      error.value = e.message;
-      throw e;
+      workouts.value = workouts.value.filter((w) => w.id !== id);
+      saveLocalWorkouts(workouts.value);
+      error.value = null;
+      console.warn('deleteWorkout API fallback:', e);
     }
   }
 
@@ -208,8 +243,13 @@ export const useWorkoutStore = defineStore('workout', () => {
       if (idx !== -1) workouts.value[idx] = data;
       return data;
     } catch (e) {
-      error.value = e.message;
-      throw e;
+      const data = { ...payload, id };
+      const idx = workouts.value.findIndex((w) => w.id === id);
+      if (idx !== -1) workouts.value[idx] = data;
+      saveLocalWorkouts(workouts.value);
+      error.value = null;
+      console.warn('updateWorkout API fallback:', e);
+      return data;
     }
   }
 
